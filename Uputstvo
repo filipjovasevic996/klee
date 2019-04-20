@@ -1,0 +1,35 @@
+Problem
+
+Cilj ovog rada je da se u okviru alata KLEE koji služi za
+simboličko izvršavanje programa i automatsko generisanje test primera, koji vrši analizu nad llvm kodom i koristi SMT rešavač STP za proveravanje uslova ispravnosti koje generiše, pokuša postojeći alat proširiti za novu heuristiku koja bi poboljšala pokrivenosti koda prilikom simboličkog izvršavanja.
+Pri upoređivanju rezultata napisani su testovi koji su pušteni kroz postojeće heuristike kao i kroz našu novu implementiranu heuristiku.
+
+Arhitektura ovog projekta
+
+https://github.com/salesh/klee direktorijum je glavni direktorijum našeg projekta.
+Celoukupan sadržaj ovog direktorijuma je preuzet sa zvaničnog projekta ovog alata
+https://github.com/klee/klee
+
+U direktorijumu klee/lib/Core/ se nalaze klase koje su proširene po uzoru na ostale funkcije pretrage koje trenutno postoje u samom alatu, kako bi naša pretraga mogla da se izvršava (UserSearcher.cpp..).
+
+Algoritam
+
+// TODO
+
+
+
+Pokretanje
+
+1) Docker
+	- neophodno je imati instaliran docker
+	- git clone https://github.com/salesh/klee.git
+	- cd klee
+	- docker build -t klee/klee .
+	- docker run --rm -ti --ulimit='stack=-1:-1' klee/klee
+	- cd klee_src/test/search-target-test
+	- clang -I ../../include -emit-llvm -c -g -O0 -Xclang -disable-O0-optnone test-1.c
+	- klee --search=target-searcher --target-function=dfs test-1.bc 
+
+
+2) Instaliranje u okviru host masine na linuxu, upustvo na linku 
+http://klee.github.io/build-llvm60/
