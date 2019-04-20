@@ -76,6 +76,7 @@ ExecutionState::ExecutionState(KFunction *kf) :
     coveredNew(false),
     forkDisabled(false),
     ptreeNode(0),
+    targetFunc(false),
     steppedInstructions(0){
   pushFrame(0, kf);
 }
@@ -125,6 +126,7 @@ ExecutionState::ExecutionState(const ExecutionState& state):
     ptreeNode(state.ptreeNode),
     symbolics(state.symbolics),
     arrayNames(state.arrayNames),
+	  targetFunc(state.targetFunc),
     openMergeStack(state.openMergeStack),
     steppedInstructions(state.steppedInstructions)
 {

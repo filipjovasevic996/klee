@@ -6,6 +6,10 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
+#include "./KInstruction.h"
+#include "llvm/IR/Instruction.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Function.h"
 
 #ifndef KLEE_KINSTITERATOR_H
 #define KLEE_KINSTITERATOR_H
@@ -36,6 +40,9 @@ namespace klee {
     operator bool() const { return it != 0; }
 
     KInstruction *operator ->() const { return *it; }
+    std::string getFuncName() const{
+    	return (*it)->inst->getParent()->getParent()->getName();
+    }
   };
 } // End klee namespace
 

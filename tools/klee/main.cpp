@@ -57,6 +57,7 @@
 
 #include <cerrno>
 #include <ctime>
+#include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <iterator>
@@ -289,6 +290,15 @@ namespace {
            cl::desc("Link the llvm libc++ library into the bitcode (default=false)"),
            cl::init(false),
            cl::cat(LinkCat));
+
+  cl::opt<std::string>
+  TargetFunction("target-function",cl::desc("Target Function for grading"),cl::init(""));
+
+  cl::opt<bool>
+  OnlyKtestForTarget("onlyKtestForTarget",cl::desc("Generate Ktest for covering target only"));
+
+  cl::opt<bool>
+  ConstructSeedForTarget("constructSeedForTarget",cl::desc("Construct seeds for reaching target function"));
 }
 
 namespace klee {
@@ -304,6 +314,9 @@ private:
   std::unique_ptr<llvm::raw_ostream> m_infoFile;
 
   SmallString<128> m_outputDirectory;
+
+
+  std::vector<std::string> m_targetFunctions;
 
   unsigned m_numTotalTests;     // Number of tests received from the interpreter
   unsigned m_numGeneratedTests; // Number of tests successfully generated
@@ -342,11 +355,16 @@ public:
                                  std::vector<std::string> &results);
 
   static std::string getRunTimeLibraryPath(const char *argv0);
+  void processTargetFunction();
+  const std::vector<std::string>& getTargetFunction();
+  const bool ifConstructSeedForTarget(){
+	  return ConstructSeedForTarget;
+  }
 };
 
 KleeHandler::KleeHandler(int argc, char **argv)
     : m_interpreter(0), m_pathWriter(0), m_symPathWriter(0),
-      m_outputDirectory(), m_numTotalTests(0), m_numGeneratedTests(0),
+      m_outputDirectory(), m_targetFunctions(), m_numTotalTests(0), m_numGeneratedTests(0),
       m_pathsExplored(0), m_argc(argc), m_argv(argv) {
 
   // create output directory (OutputDir or "klee-out-<i>")
@@ -675,7 +693,22 @@ std::string KleeHandler::getRunTimeLibraryPath(const char *argv0) {
                        libDir.c_str() << "\n");
   return libDir.str();
 }
+void KleeHandler::processTargetFunction(){
+	 std::string targetFunctions = TargetFunction;
+	 while(!targetFunctions.empty()){
+		 int pos=targetFunctions.find_first_of(',');
+		 std::string s = targetFunctions.substr(0,pos);
+		 m_targetFunctions.push_back(s);
+		 if(pos == -1)
+			 	return;
+		 targetFunctions=targetFunctions.substr(pos+1);
+	 }
+	 return;
+}
 
+const std::vector<std::string>& KleeHandler::getTargetFunction(){
+	return m_targetFunctions;
+}
 //===----------------------------------------------------------------------===//
 // main Driver function
 //
@@ -882,7 +915,7 @@ static const char *unsafeExternals[] = {
 };
 
 #define NELEMS(array) (sizeof(array)/sizeof(array[0]))
-void externalsAndGlobalsCheck(const llvm::Module *m) {
+void externalsAndGlobalsCheck( llvm::Module *m) {
   std::map<std::string, bool> externals;
   std::set<std::string> modelled(modelledExternals,
                                  modelledExternals+NELEMS(modelledExternals));
@@ -1215,6 +1248,7 @@ int main(int argc, char **argv, char **envp) {
   std::string errorMsg;
   LLVMContext ctx;
   std::vector<std::unique_ptr<llvm::Module>> loadedModules;
+  std::cout << "Ucitavanje bc fajla: " << InputFile.c_str() <<  "\n";
   if (!klee::loadFile(InputFile, ctx, loadedModules, errorMsg)) {
     klee_error("error loading program '%s': %s", InputFile.c_str(),
                errorMsg.c_str());
@@ -1238,7 +1272,7 @@ int main(int argc, char **argv, char **envp) {
                                   /*Optimize=*/OptimizeModule,
                                   /*CheckDivZero=*/CheckDivZero,
                                   /*CheckOvershift=*/CheckOvershift);
-
+  std::cout << "Funkcija iz koje krecemo: " << EntryPoint.c_str() <<  "\n";
   if (WithPOSIXRuntime) {
     SmallString<128> Path(Opts.LibraryDir);
     llvm::sys::path::append(Path, "libkleeRuntimePOSIX.bca");
@@ -1346,6 +1380,7 @@ int main(int argc, char **argv, char **envp) {
   Interpreter::InterpreterOptions IOpts;
   IOpts.MakeConcreteSymbolic = MakeConcreteSymbolic;
   KleeHandler *handler = new KleeHandler(pArgc, pArgv);
+   handler->processTargetFunction();
   Interpreter *interpreter =
     theInterpreter = Interpreter::create(ctx, IOpts, handler);
   assert(interpreter);
@@ -1365,7 +1400,7 @@ int main(int argc, char **argv, char **envp) {
     klee_error("Entry function '%s' not found in module.", EntryPoint.c_str());
   }
 
-  externalsAndGlobalsCheck(finalModule);
+  externalsAndGlobalsCheck(const_cast<Module*> (finalModule));
 
   if (ReplayPathFile != "") {
     interpreter->setReplayPath(&replayPath);

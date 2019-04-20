@@ -18,6 +18,11 @@
 #include <queue>
 #include <set>
 #include <vector>
+#include "llvm/IR/Function.h"
+#include "Executor.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
 
 namespace llvm {
   class BasicBlock;
@@ -70,6 +75,7 @@ namespace klee {
     }
 
     enum CoreSearchType {
+      TargetSearcher,
       DFS,
       BFS,
       RandomState,
@@ -83,6 +89,20 @@ namespace klee {
     };
   };
 
+  class TargetSearcher : public Searcher{
+	  std::vector<ExecutionState*> states;
+	  std::vector<ExecutionState*> targetStates;
+  public:
+	  ExecutionState &selectState();
+	  void update(ExecutionState *current,
+			  const std::vector<ExecutionState*> &addedStates,
+			  const std::vector<ExecutionState*> &removedStates);
+	  bool empty() { return (targetStates.empty() && states.empty()); }
+	  void printName(llvm::raw_ostream &os) {
+		  os << "TargetSearcher\n";
+	  }
+  };
+  
   class DFSSearcher : public Searcher {
     std::vector<ExecutionState*> states;
 

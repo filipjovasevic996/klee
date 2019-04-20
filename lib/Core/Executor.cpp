@@ -83,6 +83,9 @@
 #include <sys/mman.h>
 #include <vector>
 
+#include <iostream>
+
+
 using namespace llvm;
 using namespace klee;
 
@@ -817,7 +820,7 @@ void Executor::branch(ExecutionState &state,
     // XXX do proper balance or keep random?
     result.push_back(&state);
     for (unsigned i=1; i<N; ++i) {
-      ExecutionState *es = result[theRNG.getInt32() % i];
+      ExecutionState *es = result[i-1];
       ExecutionState *ns = es->branch();
       addedStates.push_back(ns);
       result.push_back(ns);
@@ -1617,9 +1620,11 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     }
     
     if (state.stack.size() <= 1) {
+      klee_message("nema vise stack-ova u state-u pa se state zavrsava");
       assert(!caller && "caller set on initial stack frame");
       terminateStateOnExit(state);
     } else {
+      klee_message("uklanja se okvir funkcije");
       state.popFrame();
 
       if (statsTracker)
@@ -1670,6 +1675,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     break;
   }
   case Instruction::Br: {
+    klee_message("'grananje' (branch) instrukcija");
     BranchInst *bi = cast<BranchInst>(i);
     if (bi->isUnconditional()) {
       transferToBasicBlock(bi->getSuccessor(0), bi->getParent(), state);
@@ -1680,6 +1686,8 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       ref<Expr> cond = eval(ki, 0, state).value;
 
       cond = optimizer.optimizeExpr(cond, false);
+      klee_message("uslov: %d", cond->getKind());
+      klee_message("kreiraju se grane");
       Executor::StatePair branches = fork(state, cond, false);
 
       // NOTE: There is a hidden dependency here, markBranchVisited
@@ -1697,6 +1705,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     break;
   }
   case Instruction::IndirectBr: {
+    klee_message("indirect branch");
     // implements indirect branch to a label within the current function
     const auto bi = cast<IndirectBrInst>(i);
     auto address = eval(ki, 0, state).value;
@@ -1770,6 +1779,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     break;
   }
   case Instruction::Switch: {
+    klee_message("switch nardeba");
     SwitchInst *si = cast<SwitchInst>(i);
     ref<Expr> cond = eval(ki, 0, state).value;
     BasicBlock *bb = si->getParent();
@@ -1904,6 +1914,7 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     unsigned numArgs = cs.arg_size();
     Value *fp = cs.getCalledValue();
     Function *f = getTargetFunction(fp, state);
+    klee_message("poziv funkcije %s", f->getName());
 
     // Skip debug intrinsics, we can't evaluate their metadata arguments.
     if (isa<DbgInfoIntrinsic>(i))
@@ -1913,6 +1924,15 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       terminateStateOnExecError(state, "inline assembly is unsupported");
       break;
     }
+
+    if(ifTargetFunction(f)){
+    	state.targetFunc = true;
+    	if(interpreterHandler->ifConstructSeedForTarget()){
+    		terminateStateEarly(state,"Target Function Reached, Stop Executing to Generate KTEST Seeds.");
+    		break;
+    	}
+    }
+
     // evaluate arguments
     std::vector< ref<Expr> > arguments;
     arguments.reserve(numArgs);
@@ -2715,7 +2735,7 @@ void Executor::updateStates(ExecutionState *current) {
   if (searcher) {
     searcher->update(current, addedStates, removedStates);
   }
-  
+
   states.insert(addedStates.begin(), addedStates.end());
   addedStates.clear();
 
@@ -2863,7 +2883,7 @@ void Executor::doDumpStates() {
   updateStates(nullptr);
 }
 
-void Executor::run(ExecutionState &initialState) {
+void Executor::run(ExecutionState &initialState) { 
   bindModuleConstants();
 
   // Delay init till now so that ticks don't accrue during
@@ -2896,6 +2916,30 @@ void Executor::run(ExecutionState &initialState) {
       unsigned numSeeds = it->second.size();
       ExecutionState &state = *lastState;
       KInstruction *ki = state.pc;
+
+      if(usingSeeds && state.stack.size() <= 1) {
+        std::map<ExecutionState*, std::vector<SeedInfo> >::iterator it = seedMap.find(&state);
+        bool isSeeding = it != seedMap.end();
+        bool trueSeed = false;
+        bool falseSeed = false;
+        for(std::vector<SeedInfo>::iterator siit = it->second.begin(),
+	        siie = it->second.end(); siit != siit; ++siit) {
+          ref<ConstantExpr> res;
+          ref<Expr> cond = eval(ki, 0, state).value;
+          bool success = solver->getValue(state, siit->assignment.evaluate(cond), res);
+          if (res->isTrue()) {
+            trueSeed = true;
+          } else {
+            falseSeed = true;
+          }
+          if(trueSeed && falseSeed)
+            break;
+        }
+        if(trueSeed && falseSeed) {
+          continue;
+        }
+      }
+      
       stepInstruction(state);
 
       executeInstruction(state, ki);
@@ -2949,6 +2993,9 @@ void Executor::run(ExecutionState &initialState) {
 
   while (!states.empty() && !haltExecution) {
     ExecutionState &state = searcher->selectState();
+    if(states.empty()) {
+      break;
+    }
     KInstruction *ki = state.pc;
     stepInstruction(state);
 
@@ -3749,7 +3796,7 @@ void Executor::runFunctionAsMain(Function *f,
 				 char **argv,
 				 char **envp) {
   std::vector<ref<Expr> > arguments;
-
+  
   // force deterministic initialization of memory objects
   srand(1);
   srandom(1);
@@ -3794,13 +3841,13 @@ void Executor::runFunctionAsMain(Function *f,
 
   ExecutionState *state = new ExecutionState(kmodule->functionMap[f]);
   
-  if (pathWriter) 
+  if (pathWriter)
     state->pathOS = pathWriter->open();
   if (symPathWriter) 
     state->symPathOS = symPathWriter->open();
 
 
-  if (statsTracker)
+  if (statsTracker) 
     statsTracker->framePushed(*state, 0);
 
   assert(arguments.size() == f->arg_size() && "wrong number of arguments");
