@@ -474,6 +474,18 @@ private:
 
   void initTimers();
   void processTimers(ExecutionState *current, time::Span maxInstTime);
+  bool ifTargetFunction(const llvm::Function *f){
+	  if(!f){
+		  return false;
+	  }
+	  std::string functionName=f->getName();
+	  std::vector<std::string> targetFunctions = interpreterHandler->getTargetFunction();
+	  for(std::vector<std::string>::iterator it= targetFunctions.begin(), ie = targetFunctions.end(); it != ie; it++){
+		  if(functionName == *it)
+		  	 return true;
+	  }
+	  return false;
+  }
   void checkMemoryUsage();
   void printDebugInstructions(ExecutionState &state);
   void doDumpStates();
