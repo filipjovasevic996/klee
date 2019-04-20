@@ -1,4 +1,4 @@
-#include "klee/include/klee/klee.h"
+#include "klee/klee.h"
 
 void bfs( int a0, int a1) {
 	int k, n = 0;
