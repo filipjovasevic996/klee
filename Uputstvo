@@ -28,8 +28,24 @@ Pokretanje
 	- docker run --rm -ti --ulimit='stack=-1:-1' klee/klee
 	- cd klee_src/test/search-target-test
 	- clang -I ../../include -emit-llvm -c -g -O0 -Xclang -disable-O0-optnone test-1.c
-	- klee --search=target-searcher --target-function=dfs test-1.bc 
+	- klee --search=target-searcher --target-function=better_with_dfs test-1.bc 
 
 
 2) Instaliranje u okviru host masine na linuxu, upustvo na linku 
 http://klee.github.io/build-llvm60/
+
+
+Rezultati
+
+U folderu target-searcher-stats nalazi se statistika upotrebe bfs, dfs i target-search pretraga pozivom klee alata sa parametrom --exit-on-error.
+1) BFS
+	klee --exit-on-error --search=bfs test-1.bc - slika /target-searcher-stats/bfs-test-1
+	klee --exit-on-error --search=bfs test-2.bc - slika /target-searcher-stats/bfs-test-2
+2) DFS
+	klee --exit-on-error --search=dfs test-1.bc - slika /target-searcher-stats/dfs-test-1
+	klee --exit-on-error --search=dfs test-2.bc - slika /target-searcher-stats/dfs-test-2
+3) TARGET SEARCHER
+	klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-1.bc - slika /target-searcher-stats/ts-test-1
+	klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-2.bc - slika /target-searcher-stats/ts-test-2
+
+Ova statistika pokazuje da ako oznacimo odgovarajucu funkciju prilikom poziva target-searcher-a mozemo dobiti bolje rezultate nego primenom samo bfs ili samo dfs pretrage.

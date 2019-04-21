@@ -1,6 +1,6 @@
 #include "klee/klee.h"
 
-void bfs( int a0, int a1) {
+void better_with_dfs( int a0, int a1) {
 	int k, n = 0;
 	if (a0 > 0)
 		a0 = 1;
@@ -16,7 +16,7 @@ void bfs( int a0, int a1) {
 	k = k / (n + 2);
 }
 
-void dfs(int a0, int a1) {
+void better_with_bfs(int a0, int a1) {
 	int k, n = 0;
 	if (a0 > 0)
 		a0 = 1;
@@ -39,6 +39,6 @@ int main()
 	klee_make_symbolic(&a0, sizeof(a0), "a0");
 	klee_make_symbolic(&a1, sizeof(a1), "a1");
 	
-	dfs(a0, a1);
-	bfs(a0, a1);
+	better_with_dfs(a0, a1);
+	better_with_bfs(a0, a1);
 }

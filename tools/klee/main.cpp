@@ -1248,7 +1248,6 @@ int main(int argc, char **argv, char **envp) {
   std::string errorMsg;
   LLVMContext ctx;
   std::vector<std::unique_ptr<llvm::Module>> loadedModules;
-  std::cout << "Ucitavanje bc fajla: " << InputFile.c_str() <<  "\n";
   if (!klee::loadFile(InputFile, ctx, loadedModules, errorMsg)) {
     klee_error("error loading program '%s': %s", InputFile.c_str(),
                errorMsg.c_str());
@@ -1272,7 +1271,6 @@ int main(int argc, char **argv, char **envp) {
                                   /*Optimize=*/OptimizeModule,
                                   /*CheckDivZero=*/CheckDivZero,
                                   /*CheckOvershift=*/CheckOvershift);
-  std::cout << "Funkcija iz koje krecemo: " << EntryPoint.c_str() <<  "\n";
   if (WithPOSIXRuntime) {
     SmallString<128> Path(Opts.LibraryDir);
     llvm::sys::path::append(Path, "libkleeRuntimePOSIX.bca");

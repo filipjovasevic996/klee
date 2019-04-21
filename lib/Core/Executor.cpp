@@ -83,8 +83,6 @@
 #include <sys/mman.h>
 #include <vector>
 
-#include <iostream>
-
 
 using namespace llvm;
 using namespace klee;
@@ -1620,11 +1618,9 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     }
     
     if (state.stack.size() <= 1) {
-      klee_message("nema vise stack-ova u state-u pa se state zavrsava");
       assert(!caller && "caller set on initial stack frame");
       terminateStateOnExit(state);
     } else {
-      klee_message("uklanja se okvir funkcije");
       state.popFrame();
 
       if (statsTracker)
@@ -1675,7 +1671,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     break;
   }
   case Instruction::Br: {
-    klee_message("'grananje' (branch) instrukcija");
     BranchInst *bi = cast<BranchInst>(i);
     if (bi->isUnconditional()) {
       transferToBasicBlock(bi->getSuccessor(0), bi->getParent(), state);
@@ -1686,8 +1681,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       ref<Expr> cond = eval(ki, 0, state).value;
 
       cond = optimizer.optimizeExpr(cond, false);
-      klee_message("uslov: %d", cond->getKind());
-      klee_message("kreiraju se grane");
       Executor::StatePair branches = fork(state, cond, false);
 
       // NOTE: There is a hidden dependency here, markBranchVisited
@@ -1705,7 +1698,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     break;
   }
   case Instruction::IndirectBr: {
-    klee_message("indirect branch");
     // implements indirect branch to a label within the current function
     const auto bi = cast<IndirectBrInst>(i);
     auto address = eval(ki, 0, state).value;
@@ -1779,7 +1771,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     break;
   }
   case Instruction::Switch: {
-    klee_message("switch nardeba");
     SwitchInst *si = cast<SwitchInst>(i);
     ref<Expr> cond = eval(ki, 0, state).value;
     BasicBlock *bb = si->getParent();
@@ -1914,7 +1905,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     unsigned numArgs = cs.arg_size();
     Value *fp = cs.getCalledValue();
     Function *f = getTargetFunction(fp, state);
-    klee_message("poziv funkcije %s", f->getName());
 
     // Skip debug intrinsics, we can't evaluate their metadata arguments.
     if (isa<DbgInfoIntrinsic>(i))

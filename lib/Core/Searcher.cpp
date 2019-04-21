@@ -8,7 +8,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "Searcher.h"
-#include <dirent.h>
 #include "CoreStats.h"
 #include "Executor.h"
 #include "PTree.h"
@@ -30,7 +29,6 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/CommandLine.h"
-#include "llvm/IR/LegacyPassManager.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -50,8 +48,6 @@
 
 using namespace klee;
 using namespace llvm;
-using namespace std;
-using namespace std::chrono;
 
 namespace klee {
   extern RNG theRNG;
@@ -72,22 +68,16 @@ ExecutionState &TargetSearcher::selectState(){
 
 void TargetSearcher::update(ExecutionState *current, const std::vector<ExecutionState*> &addedStates,
 		const std::vector<ExecutionState*> &removedStates) {
-  klee_message("Broj novih stanja: %d", addedStates.size());
-  klee_message("Broj uklonjenih stanja: %d", removedStates.size());
-  klee_message("Broj stanja: %d", states.size());
-  if (current && current->prevPC && current->prevPC->inst && current->prevPC->inst->getFunction()) 
-    klee_message("Trenutna funkcija: %s", current->prevPC->inst->getFunction()->getName());
-    if (addedStates.size() > 0) {
-	      for(std::vector<ExecutionState*>::const_iterator it = addedStates.begin(), ie = addedStates.end();it != ie; ++it){
-		      if((*it)->targetFunc){
-            klee_message("Broj target stanja: %d", targetStates.size());
-            targetStates.insert(targetStates.end(),*it);
-		      } else {
-			      states.insert(states.end(),*it);
-		      }
-	      }
-    }
-  klee_message("Broj target stanja: %d", targetStates.size()); 
+  if (addedStates.size() > 0) {
+      for(std::vector<ExecutionState*>::const_iterator it = addedStates.begin(), ie = addedStates.end();it != ie; ++it){
+        if((*it)->targetFunc){
+          targetStates.insert(targetStates.end(),*it);
+        } else {
+          states.insert(states.end(),*it);
+        }
+      }
+  }
+
 	for (std::vector<ExecutionState*>::const_iterator it = removedStates.begin(),
 			ie = removedStates.end(); it != ie; ++it) {
 		ExecutionState *es = *it;
@@ -128,21 +118,14 @@ ExecutionState &DFSSearcher::selectState() {
 void DFSSearcher::update(ExecutionState *current,
                          const std::vector<ExecutionState *> &addedStates,
                          const std::vector<ExecutionState *> &removedStates) {
-  std::cout << "dfs::update " ;
-  klee_message("Broj novih stanja: %d", addedStates.size());
-  klee_message("Broj uklonjenih stanja: %d", removedStates.size());
-  klee_message("Broj stanja: %d", states.size());
-  klee_message("Na kraj skupa stanja dodaju se nova stanja koja su prosledjena kao argument");
   states.insert(states.end(),
                 addedStates.begin(), 
                 addedStates.end());
-  klee_message("Prolazak kroz uklonjena stanja kako bi se ta stanja izbacila iz skupa stanja");
   for (std::vector<ExecutionState *>::const_iterator it = removedStates.begin(),
                                                      ie = removedStates.end();
        it != ie; ++it) {
     ExecutionState *es = *it;
     if (es == states.back()) {
-      klee_message("Uklonjeno je stanje sa kraja skupa stanja");
       states.pop_back();
     } else {
       bool ok = false;
@@ -150,7 +133,6 @@ void DFSSearcher::update(ExecutionState *current,
       for (std::vector<ExecutionState*>::iterator it = states.begin(),
              ie = states.end(); it != ie; ++it) {
         if (es==*it) {
-          klee_message("Uklonjeno je stanje iz sredine skupa stanja");
           states.erase(it);
           ok = true;
           break;
@@ -161,8 +143,6 @@ void DFSSearcher::update(ExecutionState *current,
       assert(ok && "invalid state removed");
     }
   }
-
-  klee_message("Kraj prolaska kroz uklonjena stanja");
 }
 
 ///
@@ -176,18 +156,9 @@ void BFSSearcher::update(ExecutionState *current,
                          const std::vector<ExecutionState *> &removedStates) {
   // Assumption: If new states were added KLEE forked, therefore states evolved.
   // constraints were added to the current state, it evolved.
-  std::cout << "bfs::update " ;
-  if (current && current->prevPC)
-    klee_message("Trenutno stanje: %s", current->prevPC->getSourceLocation().c_str());
-  if (current && current->prevPC && current->prevPC->inst && current->prevPC->inst->getFunction())
-    klee_message("Trenutna funkcija: %s", current->prevPC->inst->getFunction()->getName());
-  klee_message("Broj novih stanja: %d", addedStates.size());
-  klee_message("Broj uklonjenih stanja: %d", removedStates.size());
-  klee_message("Broj stanja: %d", states.size());
   if (!addedStates.empty() && current &&
       std::find(removedStates.begin(), removedStates.end(), current) ==
           removedStates.end()) {
-    klee_message("Stanje koje se ne uklanja se prebacuje na kraj skupa stanja");
     auto pos = std::find(states.begin(), states.end(), current);
     assert(pos != states.end());
     states.erase(pos);
@@ -203,7 +174,6 @@ void BFSSearcher::update(ExecutionState *current,
     ExecutionState *es = *it;
     if (es == states.front()) {
 
-      klee_message("Stanje se uklanja sa pocetka skupa stanja");
       states.pop_front();
     } else {
       bool ok = false;
@@ -211,7 +181,6 @@ void BFSSearcher::update(ExecutionState *current,
       for (std::deque<ExecutionState*>::iterator it = states.begin(),
              ie = states.end(); it != ie; ++it) {
         if (es==*it) {
-          klee_message("Stanje se uklanja sa kraja skupa stanja");
           states.erase(it);
           ok = true;
           break;
