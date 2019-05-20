@@ -23,16 +23,22 @@ Dakle, potrebno je navesti naziv pretrage **target-searcher**, zatim naziv funkc
 
 U folderu target-searcher-stats nalazi se statistika upotrebe bfs, dfs i target-search pretraga pozivom klee alata sa parametrom --exit-on-error.
 1) **BFS**
-	- ```klee --exit-on-error --search=bfs test-1.bc``` - slika /target-searcher-stats/bfs-test-1
-	- ```klee --exit-on-error --search=bfs test-2.bc``` - slika /target-searcher-stats/bfs-test-2
+	- ```klee --exit-on-error --search=bfs test-1.bc```
+	![alt text](./target-searcher-stats/bfs-test-1.png)
+	- ```klee --exit-on-error --search=bfs test-2.bc```
+	![alt text](/target-searcher-stats/bfs-test-2.png)
 2) **DFS**
-	- ```klee --exit-on-error --search=dfs test-1.bc``` - slika /target-searcher-stats/dfs-test-1
-	- ```klee --exit-on-error --search=dfs test-2.bc``` - slika /target-searcher-stats/dfs-test-2
+	- ```klee --exit-on-error --search=dfs test-1.bc```
+	![alt text](/target-searcher-stats/dfs-test-1.png)
+	- ```klee --exit-on-error --search=dfs test-2.bc```
+	![alt text](/target-searcher-stats/dfs-test-2.png)
 3) **TARGET SEARCHER**
-	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-1.bc``` - slika /target-searcher-stats/ts-test-1
-	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-2.bc``` - slika /target-searcher-stats/ts-test-2
+	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-1.bc```
+	![alt text](/target-searcher-stats/ts-test-1.png)
+	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-2.bc```
+	![alt text](/target-searcher-stats/ts-test-2.png)
   
-Ova statistika pokazuje da ako označimo odgovarajuću funkciju (u kojoj će se izvršiti DFS pretraga) prilikom poziva target-searcher-a možemo dobiti bolje rezultate nego primenom samo BFS ili samo DFS pretrage.
+Ova statistika pokazuje da ako označimo odgovarajuću funkciju (u kojoj će se izvršiti DFS pretraga) prilikom poziva target-searcher-a možemo dobiti bolje rezultate nego primenom samo BFS ili samo DFS pretrage. Najvažniji deo jeste izbor funkcija u kojima će se izvršiti DFS pretraga, tj unaped trebamo odrediti takve funkcije.
 
 ## Primeri
 
