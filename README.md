@@ -1,26 +1,39 @@
-KLEE Symbolic Virtual Machine
-=============================
+Pokretanje
 
-[![Build Status](https://travis-ci.org/klee/klee.svg?branch=master)](https://travis-ci.org/klee/klee)
-[![Coverage](https://codecov.io/gh/klee/klee/branch/master/graph/badge.svg)](https://codecov.io/gh/klee/klee)
+1) Docker
+	- neophodno je imati instaliran docker
+	- git clone https://github.com/salesh/klee.git
+	- cd klee
+	- docker build -t klee/klee .
+	- docker run --rm -ti --ulimit='stack=-1:-1' klee/klee
+	- cd klee_src/test/search-target-test
+	- clang -I ../../include -emit-llvm -c -g -O0 -Xclang -disable-O0-optnone test-1.c
+	- klee --search=target-searcher --target-function=better_with_dfs test-1.bc 
 
-`KLEE` is a symbolic virtual machine built on top of the LLVM compiler
-infrastructure. Currently, there are two primary components:
 
-  1. The core symbolic virtual machine engine; this is responsible for
-     executing LLVM bitcode modules with support for symbolic
-     values. This is comprised of the code in lib/.
+2) Instaliranje u okviru host masine na linuxu, upustvo na linku 
+http://klee.github.io/build-llvm60/ 
+Napomena: U osmom (Get KLEE source) koraku treba klonirati ovaj repozitorijum
 
-  2. A POSIX/Linux emulation layer oriented towards supporting uClibc,
-     with additional support for making parts of the operating system
-     environment symbolic.
+Način upotrebe nove pretrage:
+klee --exit-on-error --search=target-searcher --target-function=ime_funkcije ime_fajla.bc
+Dakle, potrebno je navesti naziv pretrage **target-searcher**, zatim naziv funkcije u kojoj će biti primenjena dfs pretraga i ime odgovarajućeg .bc fajla. 
 
-Additionally, there is a simple library for replaying computed inputs
-on native code (for closed programs). There is also a more complicated
-infrastructure for replaying the inputs generated for the POSIX/Linux
-emulation layer, which handles running native programs in an
-environment that matches a computed test input, including setting up
-files, pipes, environment variables, and passing command line
-arguments.
+Rezultati
 
-For further information, see the [webpage](http://klee.github.io/).
+U folderu target-searcher-stats nalazi se statistika upotrebe bfs, dfs i target-search pretraga pozivom klee alata sa parametrom --exit-on-error.
+1) BFS
+	klee --exit-on-error --search=bfs test-1.bc - slika /target-searcher-stats/bfs-test-1
+	klee --exit-on-error --search=bfs test-2.bc - slika /target-searcher-stats/bfs-test-2
+2) DFS
+	klee --exit-on-error --search=dfs test-1.bc - slika /target-searcher-stats/dfs-test-1
+	klee --exit-on-error --search=dfs test-2.bc - slika /target-searcher-stats/dfs-test-2
+3) TARGET SEARCHER
+	klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-1.bc - slika /target-searcher-stats/ts-test-1
+	klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-2.bc - slika /target-searcher-stats/ts-test-2
+  
+Ova statistika pokazuje da ako označimo odgovarajuću funkciju (u kojoj će se izvršiti DFS pretraga) prilikom poziva target-searcher-a možemo dobiti bolje rezultate nego primenom samo bfs ili samo dfs pretrage.
+
+Primeri
+Test fajlovi na kojima se može istestirati rad algoritma mogu se naći u folderu /test/search-target-test
+Poziv za test-1.bc: klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-1.bc 
