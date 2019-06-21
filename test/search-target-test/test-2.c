@@ -243,6 +243,9 @@ void better_with_bfs(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int
 		a4 = 1;
         brojac--;
         k = 10 / brojac;
+        if (brojac == 0) {
+            return;
+        }
 	}else {
 		a4 = -1;
 	}
