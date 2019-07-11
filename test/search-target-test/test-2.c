@@ -1,153 +1,209 @@
 #include "klee/klee.h"
 
-void better_with_bfs(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9,
-                     int a10, int a11, int a12, int a13, int a14) {
-
-    int n = 0;
-
-    int k;
-	
-	if (a0 > 0)
-		a0 = 1;
-	else
-		a0 = -1;
-	if (a1 > 0)
-		a1 = 1;
-	else
-		a1 = -1;
-	if (a2 > 0)
-		a2 = 1;
-	else
-		a2 = -1;
-	if (a3 > 0)
-		a3 = 1;
-	else
-		a3 = -1;
-	if (a4 > 0)
-		a4 = 1;
-	else
-		a4 = -1;
-	if (a5 > 0)
-		a5 = 1;
-	else
-		a5 = -1;
-	if (a6 > 0)
-		a6 = 1;
-	else
-		a6 = -1;
-	if (a7 > 0)
-		a7 = 1;
-	else
-		a7 = -1;
-	if (a8 > 0)
-		a8 = 1;
-	else
-		a8 = -1;
-	if (a9 > 0)
-		a9 = 1;
-	else
-		a9 = -1;
-	if (a10 > 0)
-		a10 = 1;
-	else
-		a10 = -1;
-	if (a11 > 0)
-		a11 = 1;
-	else
-		a11 = -1;
-	if (a12 > 0)
-		a12 = 1;
-	else
-		a12 = -1;
-	if (a13 > 0)
-		a13 = 1;
-	else
-		a13 = -1;
-	if (a14 > 0)
-		a14 = 1;
-	else
-		a14 = -1;
-
-	n = (a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9 + a10 + a11 + a12 +
-	     a13 + a14);
-	
-
-	k = k / (n - 15);
-}
-
 void better_with_dfs(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9,
-                     int a10, int a11, int a12, int a13, int a14) {
+                     int a10, int a11, int a12, int a13, int a14, int a15) {
 
-    int n = 0;
+    int brojac = 16;
 
     int k;
 
     if (a0 > 0)
-		a0 = 1;
-	else
+        a0 = 1;
+    else {
 		a0 = -1;
+        brojac--;
+    }
 	if (a1 > 0)
 		a1 = 1;
-	else
+	else {
 		a1 = -1;
+        brojac--;
+	}
 	if (a2 > 0)
 		a2 = 1;
-	else
+	else {
 		a2 = -1;
+        brojac--;
+	}
 	if (a3 > 0)
 		a3 = 1;
-	else
+	else {
 		a3 = -1;
+        brojac--;
+	}
 	if (a4 > 0)
 		a4 = 1;
-	else
+	else {
 		a4 = -1;
+        brojac--;
+	}
 	if (a5 > 0)
 		a5 = 1;
-	else
+	else {
 		a5 = -1;
+        brojac--;
+	}
 	if (a6 > 0)
 		a6 = 1;
-	else
+	else {
 		a6 = -1;
+        brojac--;
+	}
 	if (a7 > 0)
 		a7 = 1;
-	else
+	else {
 		a7 = -1;
+        brojac--;
+	}
 	if (a8 > 0)
 		a8 = 1;
-	else
+	else {
 		a8 = -1;
+        brojac--;
+	}
 	if (a9 > 0)
 		a9 = 1;
-	else
+	else {
 		a9 = -1;
+        brojac--;
+	}
 	if (a10 > 0)
 		a10 = 1;
-	else
+	else {
 		a10 = -1;
+        brojac--;
+	}
 	if (a11 > 0)
 		a11 = 1;
-	else
+	else {
 		a11 = -1;
+        brojac--;
+	}
 	if (a12 > 0)
 		a12 = 1;
-	else
+	else {
 		a12 = -1;
+        brojac--;
+	}
 	if (a13 > 0)
 		a13 = 1;
-	else
+	else {
 		a13 = -1;
+        brojac--;
+	}
 	if (a14 > 0)
 		a14 = 1;
-	else
+	else {
 		a14 = -1;
+        brojac--;
+    }
+	if (a15 > 0)
+		a15 = 1;
+	else {
+		a15 = -1;
+        brojac--;
+	}
 
-	n = (a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9 + a10 + a11 + a12 +
-	     a13 + a14);
-
-	k = k / (n + 15);
+	k = 10 / brojac;
 }
+
+
+void better_with_bfs(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9,
+                     int a10, int a11, int a12, int a13, int a14, int a15) {
+
+    int brojac = 2;
+
+    int k;
+
+    if (a0 > 0) {
+        a0 = 1;
+        brojac--;
+    } else {
+		a0 = -1;
+    }
+	if (a1 > 0) {
+		a1 = 1;
+	} else {
+		a1 = -1;
+		brojac--;
+		k = 10 / brojac;
+		return;
+	}
+	if (a2 > 0) {
+		a2 = 1;
+	} else {
+		a2 = -1;
+	}
+	if (a3 > 0)
+		a3 = 1;
+	else {
+		a3 = -1;
+	}
+	if (a4 > 0) {
+		a4 = 1;
+	}else {
+		a4 = -1;
+	}
+	if (a5 > 0)
+		a5 = 1;
+	else {
+		a5 = -1;
+	}
+	if (a6 > 0)
+		a6 = 1;
+	else {
+		a6 = -1;
+	}
+	if (a7 > 0)
+		a7 = 1;
+	else {
+		a7 = -1;
+	}
+	if (a8 > 0)
+		a8 = 1;
+	else {
+		a8 = -1;
+	}
+	if (a9 > 0)
+		a9 = 1;
+	else {
+		a9 = -1;
+	}
+	if (a10 > 0)
+		a10 = 1;
+	else {
+		a10 = -1;
+	}
+	if (a11 > 0)
+		a11 = 1;
+	else {
+		a11 = -1;
+	}
+	if (a12 > 0)
+		a12 = 1;
+	else {
+		a12 = -1;
+	}
+	if (a13 > 0)
+		a13 = 1;
+	else {
+		a13 = -1;
+	}
+	if (a14 > 0)
+		a14 = 1;
+	else {
+		a14 = -1;
+    }
+	if (a15 > 0)
+		a15 = 1;
+	else {
+		a15 = -1;
+	}
+
+
+	k = 10 / brojac;
+}
+
 
 int main()
 {
