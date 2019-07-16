@@ -293,12 +293,6 @@ namespace {
 
   cl::opt<std::string>
   TargetFunction("target-function",cl::desc("Target Function for grading"),cl::init(""));
-
-  cl::opt<bool>
-  OnlyKtestForTarget("onlyKtestForTarget",cl::desc("Generate Ktest for covering target only"));
-
-  cl::opt<bool>
-  ConstructSeedForTarget("constructSeedForTarget",cl::desc("Construct seeds for reaching target function"));
 }
 
 namespace klee {
@@ -314,7 +308,6 @@ private:
   std::unique_ptr<llvm::raw_ostream> m_infoFile;
 
   SmallString<128> m_outputDirectory;
-
 
   std::vector<std::string> m_targetFunctions;
 
@@ -357,9 +350,6 @@ public:
   static std::string getRunTimeLibraryPath(const char *argv0);
   void processTargetFunction();
   const std::vector<std::string>& getTargetFunction();
-  const bool ifConstructSeedForTarget(){
-	  return ConstructSeedForTarget;
-  }
 };
 
 KleeHandler::KleeHandler(int argc, char **argv)
@@ -1378,7 +1368,7 @@ int main(int argc, char **argv, char **envp) {
   Interpreter::InterpreterOptions IOpts;
   IOpts.MakeConcreteSymbolic = MakeConcreteSymbolic;
   KleeHandler *handler = new KleeHandler(pArgc, pArgv);
-   handler->processTargetFunction();
+  handler->processTargetFunction();
   Interpreter *interpreter =
     theInterpreter = Interpreter::create(ctx, IOpts, handler);
   assert(interpreter);

@@ -73,7 +73,18 @@ void TargetSearcher::update(ExecutionState *current, const std::vector<Execution
         if((*it)->targetFunc){
           targetStates.insert(targetStates.end(),*it);
         } else {
-          states.insert(states.end(),*it);
+          if (!addedStates.empty() && current &&
+            std::find(removedStates.begin(), removedStates.end(), current) ==
+            removedStates.end()) {
+              auto pos = std::find(states.begin(), states.end(), current);
+              assert(pos != states.end());
+              states.erase(pos);
+              states.push_back(current);
+          }
+
+          states.insert(states.end(),
+                addedStates.begin(),
+                addedStates.end());
         }
       }
   }
@@ -81,14 +92,15 @@ void TargetSearcher::update(ExecutionState *current, const std::vector<Execution
 	for (std::vector<ExecutionState*>::const_iterator it = removedStates.begin(),
 			ie = removedStates.end(); it != ie; ++it) {
 		ExecutionState *es = *it;
-		if (es == states.back()) {
-			states.pop_back();
+		if (states.size() > 0 && es == states.front()) {
+
+      states.pop_front();
 		} else if (targetStates.size() > 0 && es == targetStates.back()) {
 			targetStates.pop_back();
 		}
 		else{
 			bool ok = false;
-			for (std::vector<ExecutionState*>::iterator it = states.begin(),
+			for (std::deque<ExecutionState*>::iterator it = states.begin(),
 					ie = states.end(); it != ie; ++it) {
 				if (es==*it) {
 					states.erase(it);

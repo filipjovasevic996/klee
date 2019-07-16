@@ -38,7 +38,13 @@ U folderu target-searcher-stats nalazi se statistika upotrebe bfs, dfs i target-
 	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-2.bc```
 	![alt text](/target-searcher-stats/ts-test-2.png)
   
-Ova statistika pokazuje da ako označimo odgovarajuću funkciju (u kojoj će se izvršiti DFS pretraga) prilikom poziva target-searcher-a možemo dobiti bolje rezultate nego primenom samo BFS ili samo DFS pretrage. Najvažniji deo jeste izbor funkcija u kojima će se izvršiti DFS pretraga, tj. unaped treba odrediti takve funkcije.
+Ova statistika pokazuje da ako označimo odgovarajuću funkciju (u kojoj će se izvršiti DFS pretraga) prilikom poziva target-searcher-a možemo dobiti bolje rezultate nego primenom samo BFS ili samo DFS pretrage. Najvažniji deo jeste izbor funkcija u kojima će se izvršiti DFS pretraga, tj. unaped treba odrediti takve funkcije. Ako odabrane funkcije nisu one kod kojih je bolje primeniti DFS, već BFS pretragu, mogu se dobiti jako loši rezultati što govore sledeći primeri:
+	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_bfs test-1.bc```
+	![alt text](/target-searcher-stats/ts-test-1-wrong.png)
+	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_bfs test-2.bc```
+	![alt text](/target-searcher-stats/ts-test-2-wrong.png)
+
+Dakle, u oba slučaja smo dobili najgore moguće rezultate.
 
 ## Izbor funkcija kod kojih će se koristiti DFS pretraga
 Obe strategije, obilaska čvorova u dubinu (DFS) i širinu (BFS), funkcionišu tako što posećuju prvu narednu neposećenu granu i nove ulazne vrednosti se računaju na osnovu uslova dolaska u tu granu. Ipak, način na koji biraju narednu neposećenu granu se razlikuje kod obilaska u dubinu i širinu. Ukoliko bi program analizirao čitavo stablo, obe strategije će posetiti sve moguće putanje. Međutim, nekada zbog složenosti samog stabla to nije moguće (usled vremenskih i memorijskih ograničenja) i u takvim situacijama izbor jedne od ove dve strategije može uticati na krajnji rezultat analize.
@@ -57,6 +63,8 @@ Kao zaključak, potrebno je da poznajemo funkcije koje testiramo i na osnovu tog
 U ovom radu kreirana je nova heuristika - "target-searcher" koja radi isključivo sa strategijama obilaska u širinu i dubinu. Rad se dalje može unaprediti tako da uključi izbor i neke od ostalih heuristika pretrage (npr. "Random State Search").
 
 S obzirom da su u ovom radu prekopirane originalne implementacije BFS i DFS algoritma unutar naše heuristike, dodavanje nove heuristike bi dodatno zakomplikovalo razvoj, pa bi unapređenje rada moglo da bude i u smeru da se na neki način pozivi različitih heuristika vrše pozivom originalnih funkcija (za DFS, BFS...), umesto da se kopira njihova implementacija.
+
+Takođe, nova heuristika bi mogla biti deo klase koja bi predstavljala proširenje klase Searcher.cpp, čime izvorni fajl ne bi bio promenjen i lakše bi mogao da "prati" promene koje se dešavaju u okviru repozitorijuma sa kojeg je čitav projekat preuzet.
 
 ## Primeri
 

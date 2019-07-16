@@ -1917,10 +1917,6 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
 
     if(ifTargetFunction(f)){
     	state.targetFunc = true;
-    	if(interpreterHandler->ifConstructSeedForTarget()){
-    		terminateStateEarly(state,"Target Function Reached, Stop Executing to Generate KTEST Seeds.");
-    		break;
-    	}
     }
 
     // evaluate arguments
@@ -2906,29 +2902,6 @@ void Executor::run(ExecutionState &initialState) {
       unsigned numSeeds = it->second.size();
       ExecutionState &state = *lastState;
       KInstruction *ki = state.pc;
-
-      if(usingSeeds && state.stack.size() <= 1) {
-        std::map<ExecutionState*, std::vector<SeedInfo> >::iterator it = seedMap.find(&state);
-        bool isSeeding = it != seedMap.end();
-        bool trueSeed = false;
-        bool falseSeed = false;
-        for(std::vector<SeedInfo>::iterator siit = it->second.begin(),
-	        siie = it->second.end(); siit != siit; ++siit) {
-          ref<ConstantExpr> res;
-          ref<Expr> cond = eval(ki, 0, state).value;
-          bool success = solver->getValue(state, siit->assignment.evaluate(cond), res);
-          if (res->isTrue()) {
-            trueSeed = true;
-          } else {
-            falseSeed = true;
-          }
-          if(trueSeed && falseSeed)
-            break;
-        }
-        if(trueSeed && falseSeed) {
-          continue;
-        }
-      }
       
       stepInstruction(state);
 
@@ -2983,9 +2956,6 @@ void Executor::run(ExecutionState &initialState) {
 
   while (!states.empty() && !haltExecution) {
     ExecutionState &state = searcher->selectState();
-    if(states.empty()) {
-      break;
-    }
     KInstruction *ki = state.pc;
     stepInstruction(state);
 

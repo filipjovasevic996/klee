@@ -90,7 +90,7 @@ namespace klee {
   };
 
   class TargetSearcher : public Searcher{
-	  std::vector<ExecutionState*> states;
+	  std::deque<ExecutionState*> states;
 	  std::vector<ExecutionState*> targetStates;
   public:
 	  ExecutionState &selectState();
