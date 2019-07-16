@@ -72,3 +72,14 @@ Test fajlovi na kojima se može istestirati rad algoritma mogu se naći u folder
 Poziv za test-1.bc: ```klee --exit-on-error --search=target-searcher --target-function=better_with_dfs test-1.bc``` 
 
 Primeri se sastoje od dve funkcije - "better_with_dfs" i "better_with_bfs". Kod obe funkcije stablo pretrage sadrži 2^32 listova. Kod funkcije "better_with_dfs", kod je namešten tako da se do greške dolazi u levom delu stabla na najvećoj dubini, što favorizuje strategiju obilaska u dubinu. Sa druge strane, funkcija "better_with_bfs" je tako napravljena da je putanja sa greškom dosta bliža korenu (na 5. nivou stabla) i to u njegovom desnom podstablu, što favorizuje strategiju obilaska u širinu.
+
+
+## Napravljene izmene
+
+U okviru fajla **Executor.h** implementirana je funkcija **ifTargetFunction** koja proverava da li je funkcija do koje se došlo označena kao "target" prilikom poziva. U okviru ove funkcije, poziva se funkcija **getTargetFunction** koja je napisana u okviru fajla **main.cpp** i koja vraća polje **m_targetFunctions** klase **KleeHandler**. Ovo polje zapravo predstavlja niz funkcija koje su oznacene prilikom poziva, i ovaj niz se popunjava u okviru funkcije **processTargetFunction** (main.cpp) koja zapravo manipuliše stringom unetim kao vrednost argumenta komandne linije --target-function.
+
+Klasa **ExecutionState** je proširena poljem **targetFunc** i u skladu sa tim su promenjeni konstruktori u okviru fajla **ExecutionState.cpp**. Ovo polje dobija vrednost true, ako se naiđe na funkciju koja je označena, što je implementirano u okviru fajla **Executor.cpp** uz pomoć gore pomenute funkcije **ifTargetFunction**.
+
+U okviru fajla **Searcher.h** kreirana je nova klasa **TargetSearcher**, a implementacije njenih funkcija **selectState** i **update** se nalaze u okviru fajla **Searcher.cpp**.
+
+Da bismo uopšte mogli da koristimo novu pretragu, izmenjen je i fajl **UserSearcher.cpp** tako što je dodat još jedan način pozivanja klee-a.
