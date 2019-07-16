@@ -39,6 +39,7 @@ U folderu target-searcher-stats nalazi se statistika upotrebe bfs, dfs i target-
 	![alt text](/target-searcher-stats/ts-test-2.png)
   
 Ova statistika pokazuje da ako označimo odgovarajuću funkciju (u kojoj će se izvršiti DFS pretraga) prilikom poziva target-searcher-a možemo dobiti bolje rezultate nego primenom samo BFS ili samo DFS pretrage. Najvažniji deo jeste izbor funkcija u kojima će se izvršiti DFS pretraga, tj. unaped treba odrediti takve funkcije. Ako odabrane funkcije nisu one kod kojih je bolje primeniti DFS, već BFS pretragu, mogu se dobiti jako loši rezultati što govore sledeći primeri:
+	
 	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_bfs test-1.bc```
 	![alt text](/target-searcher-stats/ts-test-1-wrong.png)
 	- ```klee --exit-on-error --search=target-searcher --target-function=better_with_bfs test-2.bc```
